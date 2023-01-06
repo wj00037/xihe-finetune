@@ -18,7 +18,7 @@ type FinetuneCreateOption = controller.FinetuneCreateRequest
 
 func New(endpoint string) Finetune {
 	s := strings.TrimSuffix(endpoint, "/")
-	if p := "api/v1/finetune"; !strings.HasSuffix(s, p) {
+	if p := "/api/v1/finetune"; !strings.HasSuffix(s, p) {
 		s += p
 	}
 
