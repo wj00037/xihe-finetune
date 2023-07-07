@@ -1,0 +1,44 @@
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM ubuntu:20.04
+
+# avoid stuck build due to user prompt
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y && \
+    apt-get install -y python3.9 python3-pip python3.9-dev
+
+EXPOSE 8080
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+# RUN apt install systemctl 2> /dev/null && apt install haveged -y  2> /dev/null && systemctl start haveged && systemctl enable haveged.service
+
+COPY script /script
+WORKDIR /script
+
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+
+# Install finetune requrements
+RUN bash fm_user.sh uninstall fm 
+RUN bash fm_user.sh uninstall ma 
+RUN bash fm_user.sh install fm 
+RUN bash fm_user.sh install ma 
+
+COPY . /big-model-finetune
+WORKDIR /big-model-finetune
+
+# Install pip requirements
+RUN pip install -r requirements.txt
+
+# # Creates a non-root user with an explicit UID and adds permission to access the /app folder
+# # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
+# RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /big-model-finetune
+# USER appuser
+
+# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
+CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]
