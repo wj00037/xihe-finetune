@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 import os
+import time
 import logging
 
 from flask import Flask, abort, request, jsonify, g, url_for, make_response
 from flask_httpauth import HTTPTokenAuth
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import *
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
+from authlib.jose import jwt
+from authlib.jose.errors import ExpiredTokenError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .fmh import FoundationModelHandler
 
-#获取当前文件所在的目录的路径
+# 获取当前文件所在的目录的路径
 cur_path = os.path.dirname(os.path.realpath(__file__))
-db_path = os.path.join(cur_path, "db.sqlite")
+db_path = os.path.join(cur_path, "../instance/db.sqlite")
 
 app = Flask(__name__)
 fmh = FoundationModelHandler()
@@ -21,6 +23,7 @@ fmh = FoundationModelHandler()
 CORS(app, supports_credentials=True)
 
 # initialization
+# todo: put the secret key to KMC & use a HASH KEY
 app.config["SECRET_KEY"] = "the quick brown fox jumps over the lazy dog"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 app.config["SQLALCHEMY_COMMIT_ON_TEARDOWN"] = True
@@ -48,20 +51,32 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, expiration=600):
-        s = Serializer(app.config["SECRET_KEY"], expires_in=expiration)
-        return s.dumps({"id": self.id}).decode("ascii")
+    def generate_auth_token(self, duration=60):
+        # 设置 JWT 头部信息
+        header = {"alg": "HS256"}
+        # 设置 JWT 负载信息
+        expiration = int(time.time()) + duration
+        payload = {
+            "sub": self.id,
+            "name": self.username,
+            "exp": expiration
+        }
+        # 生成JWT
+        token = jwt.encode(header, payload, app.config["SECRET_KEY"])
+        return jsonify({"token": token.decode("utf-8")})
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
-        except SignatureExpired:
-            return None  # valid token, but expired
-        except BadSignature:
-            return None  # invalid token
-        user = User.query.get(data["id"])
+            # 验证并解码 JWT
+            claims = jwt.decode(token, app.config["SECRET_KEY"])
+            # 获取当前用户信息
+            user = User.query.get(claims["sub"])
+        except ExpiredTokenError:
+            app.logger.info("token invalid")
+            return None
+        except Exception:
+            return None
         return user
 
 
@@ -76,8 +91,6 @@ def verify_token(token):
 
 
 # 公共返回值
-
-
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({"error": "Not found"}), 404)
@@ -102,7 +115,7 @@ def new_user():
     if username is None or password is None:
         abort(400)  # missing arguments
     if User.query.filter_by(username=username).first() is not None:
-        abort(400)  # existing user
+        return jsonify({"status": "-1", "msg": "用户名已存在"})  # existing user
     user = User(username=username)
     user.hash_password(password)
     db.session.add(user)
@@ -129,23 +142,25 @@ def get_auth_token():
     if username is None or password is None:
         abort(400)  # missing arguments
     user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({"status": "-1", "msg": "用户名不存在"})
     if not user.verify_password(password):
         return jsonify({"status": "-1", "msg": "用户名或者密码错误"})
     g.user = user
-    token = g.user.generate_auth_token(86400)
-    print(token)
+    duration = 600
+    token = g.user.generate_auth_token(duration)
     return jsonify({
         "status": 200,
         "msg": "获取token成功",
-        "token": token,
-        "duration": 86400
+        "token": token.json["token"],
+        "duration": duration
     })
 
 
 @app.route("/v1/foundation-model/finetune", methods=["POST"])
 @auth.login_required
 def create_finetune():
-    print("create: ", request.json)
+    app.logger.info(f"create: {request.json}")
     if not request.json:
         abort(400)
     for key in ["user", "task_name", "foundation_model", "task_type"]:
@@ -163,13 +178,13 @@ def create_finetune():
     if parameters:
         for param in parameters:
             params[param["name"]] = param["value"]
-    print("params: ", params)
+    app.logger.info(f"params: {params}")
     res = fmh.create_finetune_by_user(user=user,
                                       task_name=task_name,
                                       foundation_model=foundation_model,
                                       task_type=task_type,
                                       **params)
-    print("res: ", res)
+    app.logger.info(f"res: {res}")
     if res == -1:
         return jsonify({"status": -1, "msg": "创建微调任务失败"}), 201
     return jsonify({"status": 201, "msg": "创建微调任务成功", "job_id": res}), 201
@@ -178,9 +193,9 @@ def create_finetune():
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["GET"])
 @auth.login_required
 def get_finetune(job_id):
-    print("get: ", job_id)
+    app.logger.info(f"get: {job_id}")
     res = fmh.get_finetune_info(job_id)
-    print("res: ", res)
+    app.logger.info(f"res: {res}")
     if not res:
         return jsonify({"status": -1, "msg": "查询微调详情失败"}), 200
     return jsonify({"status": 200, "msg": "查询微调详情成功", "data": res})
@@ -189,9 +204,9 @@ def get_finetune(job_id):
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["PUT"])
 @auth.login_required
 def terminal_finetune(job_id):
-    print("terminal: ", job_id)
+    app.logger.info(f"terminal: {job_id}", job_id)
     res = fmh.terminal_finetune(job_id)
-    print("res: ", res)
+    app.logger.info(f"res: {res}")
     if res is False:
         return jsonify({"status": -1, "msg": "终止微调任务失败"}), 200
     return jsonify({"status": 202, "msg": "终止微调任务成功"}), 200
@@ -200,9 +215,9 @@ def terminal_finetune(job_id):
 @app.route("/v1/foundation-model/finetune/<string:job_id>", methods=["DELETE"])
 @auth.login_required
 def delete_finetune(job_id):
-    print("delete: ", job_id)
+    app.logger.info(f"delete: {job_id}")
     res = fmh.delete_finetune(job_id)
-    print("res: ", res)
+    app.logger.info(f"res: {res}")
     if res is False:
         return jsonify({"status": -1, "msg": "删除微调任务失败"}), 200
     return jsonify({"status": 204, "msg": "删除微调任务成功"}), 200
@@ -221,9 +236,9 @@ def delete_finetune(job_id):
            methods=["GET"])
 @auth.login_required
 def get_log(job_id):
-    print("get log: ", job_id)
+    app.logger.info(f"get log: {job_id}")
     res = fmh.get_finetune_log_url(job_id=job_id)
-    print("res: ", res)
+    app.logger.info(f"res: {res}")
     if not res:
         return jsonify({
             "status": -1,
@@ -236,9 +251,13 @@ def get_log(job_id):
     })
 
 
-if not os.path.exists(db_path):
-    print("create db")
-    db.create_all()
+# 在需要使用 Flask 应用程序的地方
+with app.app_context():
+    if not os.path.exists(db_path):
+        print("create db")
+        db.create_all()
+    # 在这里您可以安全地使用 Flask 应用程序
+    pass
 print("Worker【%s】 is Running" % (str(os.getpid())))
 
 # if __name__ == "__main__":
