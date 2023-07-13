@@ -11,7 +11,8 @@ def read_full_yaml(path):
     :return: dict
     """
     with open(path, 'r', encoding='utf-8') as f:
-        basic_config = yaml.load(f.read(), Loader=yaml.FullLoader)
+        # basic_config = yaml.load(f.read(), Loader=yaml.FullLoader)
+        basic_config = yaml.safe_load(f.read())
     return basic_config
 
 def convert_dict_to_yaml(dict_value):
