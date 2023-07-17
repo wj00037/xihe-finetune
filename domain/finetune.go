@@ -46,14 +46,18 @@ func NewFinetuneParameter(model, task string, hyperparameters map[string]string)
 		keys[k] = true
 	}
 
+	var keysToDelete []string
 	for k, v := range hyperparameters {
 		if !keys[k] {
 			return nil, errors.New("invalid hyperparameter")
 		}
 
 		if v == "" {
-			delete(hyperparameters, k)
+			keysToDelete = append(keysToDelete, k)
 		}
+	}
+	for _, k := range keysToDelete {
+		delete(hyperparameters, k)
 	}
 
 	return finetuneParameter{
