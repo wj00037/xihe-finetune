@@ -26,15 +26,12 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install finetune requrements
 RUN bash fm_user.sh uninstall fm
-RUN bash fm_user.sh uninstall ma 
-RUN bash fm_user.sh install fm 
-RUN bash fm_user.sh install ma 
+RUN bash fm_user.sh uninstall ma
+RUN bash fm_user.sh install fm
+RUN bash fm_user.sh install ma
 
 COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
-
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml /bigmodel-finetune/conf/asset.yml
 
 # Install pip requirements
 RUN pip install -r requirements.txt
