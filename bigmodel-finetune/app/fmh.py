@@ -11,6 +11,7 @@ from .util import read_full_yaml, convert_mstimestamp, gen_uuid, convert_dict_to
 cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BASIC_CONFIG_PATH = os.path.join(cur_path, "conf", "asset.yml")
 FINETUNE_CONFIG_PATH = os.path.join(cur_path, "conf", "finetune_basic.yml")
+finetune_basic = read_full_yaml(path=FINETUNE_CONFIG_PATH)
 
 
 class FoundationModelHandler:
@@ -20,7 +21,7 @@ class FoundationModelHandler:
             config_path (url_string): 注册组件相关配置文件
         """
         basic_config = asset
-        finetune_config = read_full_yaml(path=FINETUNE_CONFIG_PATH)
+        finetune_config = finetune_basic
         self.finetune_config = finetune_config
         self.__registry_type = str(basic_config["REGISTRY_TYPE"])
         self.__aicc_ak = basic_config["AK"]
