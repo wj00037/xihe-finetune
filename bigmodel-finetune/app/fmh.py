@@ -4,7 +4,7 @@ import json
 import requests
 import fm.fm_sdk as fm
 
-from app.obshandler import OBSHandler
+from app.obshandler import OBSHandler, asset
 from .util import read_full_yaml, convert_mstimestamp, gen_uuid, convert_dict_to_yaml
 
 # 获取当前文件所在的目录的路径
@@ -19,7 +19,7 @@ class FoundationModelHandler:
         Args:
             config_path (url_string): 注册组件相关配置文件
         """
-        basic_config = read_full_yaml(path=BASIC_CONFIG_PATH)
+        basic_config = asset
         finetune_config = read_full_yaml(path=FINETUNE_CONFIG_PATH)
         self.finetune_config = finetune_config
         self.__registry_type = str(basic_config["REGISTRY_TYPE"])
