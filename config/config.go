@@ -1,11 +1,13 @@
 package config
 
 import (
-	"github.com/opensourceways/community-robot-lib/utils"
+	"io/ioutil"
 
+	"github.com/opensourceways/community-robot-lib/utils"
 	"github.com/opensourceways/xihe-finetune/domain"
 	"github.com/opensourceways/xihe-finetune/infrastructure/finetuneimpl"
 	"github.com/opensourceways/xihe-finetune/infrastructure/watchimpl"
+	"sigs.k8s.io/yaml"
 )
 
 type configSetDefault interface {
@@ -62,10 +64,21 @@ func (cfg *Config) InitDomain() {
 	domain.Init(&cfg.Domain)
 }
 
+func LoadFromYaml(path string, cfg interface{}) error {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	//content := []byte(os.ExpandEnv(string(b)))
+
+	return yaml.Unmarshal(b, cfg)
+}
+
 func LoadConfig(path string) (*Config, error) {
 	v := new(Config)
 
-	if err := utils.LoadFromYaml(path, v); err != nil {
+	if err := LoadFromYaml(path, v); err != nil {
 		return nil, err
 	}
 
