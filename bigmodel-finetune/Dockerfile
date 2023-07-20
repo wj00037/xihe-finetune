@@ -33,10 +33,8 @@ RUN bash fm_user.sh install ma
 COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
 
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml?AccessKeyId=YDUYXZXPVPATIPIQWCYS&Expires=1689333636&Signature=a%2BsMQpsTODJp1K85dPNd%2BnoUwG0%3D \
-    /bigmodel-finetune/conf/finetune_basic.yml
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml?AccessKeyId=YDUYXZXPVPATIPIQWCYS&Expires=1689333709&Signature=FXC4b5Ke64pxVdLpxeMNXFkru0g%3D \
-    /bigmodel-finetune/conf/asset.yml
+ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
+ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml /bigmodel-finetune/conf/asset.yml
 
 # Install pip requirements
 RUN pip install -r requirements.txt
