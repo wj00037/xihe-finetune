@@ -26,11 +26,11 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install finetune requrements
 RUN bash fm_user.sh uninstall fm
-RUN bash fm_user.sh uninstall ma 
-RUN bash fm_user.sh install fm 
-RUN bash fm_user.sh install ma 
+RUN bash fm_user.sh uninstall ma
+RUN bash fm_user.sh install fm
+RUN bash fm_user.sh install ma
 
-COPY . /bigmodel-finetune
+COPY --chown=mindspore:mindspore . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
 
 ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
@@ -39,10 +39,11 @@ ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.
 # Install pip requirements
 RUN pip install -r requirements.txt
 
-# # Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-# RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /big-model-finetune
-# USER appuser
+RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
+RUN adduser -u 5000 --disabled-password --gecos "" mindspore && chown -R mindspore /bigmodel-finetune && chown -R mindspore /usr/local/lib/python3.8
+USER mindspore
+WORKDIR /bigmodel-finetune
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]
+
