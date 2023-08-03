@@ -1,3 +1,5 @@
+FROM golang:latest as BUILDER
+
 MAINTAINER zengchen1024<chenzeng765@gmail.com>
 
 # build binary
