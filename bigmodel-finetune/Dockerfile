@@ -1,4 +1,3 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
 FROM ubuntu:20.04
 
 # avoid stuck build due to user prompt
@@ -26,24 +25,22 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install finetune requrements
 RUN bash fm_user.sh uninstall fm
-RUN bash fm_user.sh uninstall ma
-RUN bash fm_user.sh install fm
-RUN bash fm_user.sh install ma
+RUN bash fm_user.sh uninstall ma 
+RUN bash fm_user.sh install fm 
+RUN bash fm_user.sh install ma 
 
-COPY --chown=mindspore:mindspore . /bigmodel-finetune
+COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
 
 ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
 ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml /bigmodel-finetune/conf/asset.yml
+ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/db.sqlite /bigmodel-finetune/conf/db.sqlite
 
-# Install pip requirements
 RUN pip install -r requirements.txt
 
 RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
-RUN adduser -u 5000 --disabled-password --gecos "" mindspore && chown -R mindspore /bigmodel-finetune && chown -R mindspore /usr/local/lib/python3.8
+RUN adduser -u 5000 --disabled-password --gecos "" mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.8
+
 USER mindspore
-WORKDIR /bigmodel-finetune
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]
-
+CMD ["/bigmodel-finetune/entrypoint.sh"]
