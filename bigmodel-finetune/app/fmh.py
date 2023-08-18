@@ -8,9 +8,9 @@ from app.obshandler import OBSHandler
 from .util import read_full_yaml, convert_mstimestamp, gen_uuid, convert_dict_to_yaml
 
 # 获取当前文件所在的目录的路径
-cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BASIC_CONFIG_PATH = os.path.join(cur_path, "conf", "asset.yml")
-FINETUNE_CONFIG_PATH = os.path.join(cur_path, "conf", "finetune_basic.yml")
+CUR_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+BASIC_CONFIG = read_full_yaml(path=os.path.join(CUR_PATH, "conf", "asset.yml"))
+FINETUNE_CONFIG = read_full_yaml(path=os.path.join(CUR_PATH, "conf", "finetune_basic.yml"))
 
 
 class FoundationModelHandler:
@@ -19,8 +19,8 @@ class FoundationModelHandler:
         Args:
             config_path (url_string): 注册组件相关配置文件
         """
-        basic_config = read_full_yaml(path=BASIC_CONFIG_PATH)
-        finetune_config = read_full_yaml(path=FINETUNE_CONFIG_PATH)
+        basic_config = BASIC_CONFIG
+        finetune_config = FINETUNE_CONFIG
         self.finetune_config = finetune_config
         self.__registry_type = str(basic_config["REGISTRY_TYPE"])
         self.__aicc_ak = basic_config["AK"]
@@ -252,33 +252,3 @@ class FoundationModelHandler:
             return res.json()
         return None
 
-
-if __name__ == "__main__":
-    fmh = FoundationModelHandler()
-    fmh.registry()
-    start_time = time.time()
-
-    user = "wesley"
-    task_name = "fm-6"
-    foundation_model = "opt-caption"
-    task_type = "finetune"
-    epochs = 5
-    start_learning_rate = 0.0001
-    end_learning_rate = 0.000001
-    print(fmh.create_finetune_by_user(user=user, task_name=task_name, foundation_model=foundation_model, task_type=task_type,
-          model_config=None, epochs=epochs, start_learning_rate=start_learning_rate, end_learning_rate=end_learning_rate))
-
-    # print(fmh.create_finetune("fm-3", "opt-caption", "finetune"))
-    # 终止job_id
-    job_id = "7200a67f-f042-47cd-8bda-e7cedcd10dbd"
-    # print(fmh.terminal_finetune(job_id=job_id))
-    # # 删除job_id
-    # job_id = "xxxxx"
-    # print(fmh.delete_finetune(job_id=job_id))
-    # job_id = "xxxxx"
-    # print(fmh.get_finetune_info(job_id=job_id))
-    # job_id = "xxxxx"
-    # fmh.get_finetune_log(job_id=job_id)
-
-    end_time = time.time()
-    print("operatre time ", end_time - start_time)
