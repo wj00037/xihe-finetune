@@ -11,11 +11,8 @@ from authlib.jose import jwt
 from authlib.jose.errors import ExpiredTokenError
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .fmh import FoundationModelHandler
+from .fmh import FoundationModelHandler, BASIC_CONFIG
 
-# 获取当前文件所在的目录的路径
-cur_path = os.path.dirname(os.path.realpath(__file__))
-db_path = os.path.join(cur_path, "../instance/db.sqlite")
 
 app = Flask(__name__)
 fmh = FoundationModelHandler()
@@ -24,8 +21,9 @@ CORS(app, supports_credentials=True)
 
 # initialization
 # todo: put the secret key to KMC & use a HASH KEY
-app.config["SECRET_KEY"] = "the quick brown fox jumps over the lazy dog"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+basic_config = BASIC_CONFIG
+app.config["SECRET_KEY"] = basic_config['SECRET_KEY']
+app.config["SQLALCHEMY_DATABASE_URI"] = basic_config['FINETUNE_MYSQL_URI']
 app.config["SQLALCHEMY_COMMIT_ON_TEARDOWN"] = True
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
@@ -40,7 +38,7 @@ db = SQLAlchemy(app)
 
 
 class User(db.Model):
-    __tablename__ = "users"
+    __tablename__ = basic_config['FINETUNE_TABLE']
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(128))
@@ -222,16 +220,6 @@ def delete_finetune(job_id):
         return jsonify({"status": -1, "msg": "删除微调任务失败"}), 200
     return jsonify({"status": 204, "msg": "删除微调任务成功"}), 200
 
-
-# @app.route("/v1/foundation-model/finetune/<string:job_id>/log/", methods=["GET"])
-# @auth.login_required
-# def get_log(job_id):
-#     res = fmh.get_finetune_log(job_id)
-#     if not res:
-#         return jsonify({"status": -1, "msg": "查询微调日志失败, 还未生成日志或者job_id不存在"}), 200
-#     return jsonify({"status": 200, "msg": "查询微调日志成功", "data": res})
-
-
 @app.route("/v1/foundation-model/finetune/<string:job_id>/log/",
            methods=["GET"])
 @auth.login_required
@@ -249,19 +237,3 @@ def get_log(job_id):
         "msg": "查询微调日志成功",
         "obs_url": res["obs_url"]
     })
-
-
-# 在需要使用 Flask 应用程序的地方
-with app.app_context():
-    if not os.path.exists(db_path):
-        print("create db")
-        db.create_all()
-    # 在这里您可以安全地使用 Flask 应用程序
-    pass
-print("Worker【%s】 is Running" % (str(os.getpid())))
-
-# if __name__ == "__main__":
-
-#     # 若ModelArts当前版本不支持配置协议与端口，去除ssl_context参数配置，port需为8080
-#     # app.run(host="*.*.*.*", port="**", ssl_context="adhoc")
-#     app.run(debug=True)

@@ -34,7 +34,6 @@ WORKDIR /bigmodel-finetune
 
 ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
 ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml /bigmodel-finetune/conf/asset.yml
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/db.sqlite /bigmodel-finetune/conf/db.sqlite
 
 RUN pip install -r requirements.txt
 

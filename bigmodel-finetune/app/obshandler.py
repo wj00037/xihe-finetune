@@ -1,23 +1,17 @@
 import os
 
 from obs import ObsClient
+from .fmh import BASIC_CONFIG
 from .util import read_full_yaml
-
-cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BASIC_CONFIG_PATH = os.path.join(cur_path, "conf", "asset.yml")
-asset = read_full_yaml(path=BASIC_CONFIG_PATH)
-AK = asset["AK"]
-SK = asset["SK"]
-BUCKET_NAME = asset["BUCKET_NAME"]
-ENDPOINT = asset["OBS_ENDPOINT"]
 
 
 class OBSHandler:
     def __init__(self, bucket_name=None, endpoint="obs.cn-central-221.ovaijisuan.com"):
-        self.access_key = AK
-        self.secret_key = SK
-        self.bucket_name = BUCKET_NAME if bucket_name is None else bucket_name
-        self.endpoint = ENDPOINT
+        basic_config = BASIC_CONFIG
+        self.access_key = basic_config["AK"]
+        self.secret_key = basic_config["SK"]
+        self.bucket_name = basic_config["BUCKET_NAME"] if bucket_name is None else bucket_name
+        self.endpoint = basic_config["OBS_ENDPOINT"]
         self.maxkeys = 1000  # 查询的对象最大个数, 最大为1000
         self.obs_client = ObsClient(
             access_key_id=self.access_key,
@@ -52,12 +46,6 @@ class OBSHandler:
                                   (str(index), filepath))
                             object_list.append(filepath)
                             index += 1
-                    # 文件夹
-                    # for prefix in resp_list.body.commonPrefixs:
-                    #     dirpath = prefix.prefix
-                    #     print('[obj][%s] : key: %s' % (str(index), dirpath))
-                    #     object_list.append(dirpath)
-                    #     index += 1
                     flag = resp_list.body.is_truncated
                     marker = resp_list.body.next_marker
                 else:
@@ -115,19 +103,3 @@ class OBSHandler:
             import traceback
             print(traceback.format_exc())
         return False
-
-
-if __name__ == "__main__":
-    bucket_name = "big-model-finetune"
-    obs = OBSHandler(bucket_name=bucket_name)
-
-    import time
-    start_time = time.time()
-
-    path = "fm/finetune/omni-perception-pretrainer/logs/"
-    print(obs.get_obj_by_delimeter(path))
-    # print(obs.getDirList(path))
-
-    end_time = time.time()
-    print("operatre time ", end_time - start_time)
-    obs.close_obs()
