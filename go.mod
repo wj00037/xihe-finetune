@@ -10,6 +10,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.8.12
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -52,5 +53,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.24.0 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )

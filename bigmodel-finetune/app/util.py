@@ -2,7 +2,7 @@ import yaml
 import uuid
 import pytz
 import datetime
-
+import os
 
 def read_full_yaml(path):
     """
@@ -13,6 +13,7 @@ def read_full_yaml(path):
     with open(path, 'r', encoding='utf-8') as f:
         # basic_config = yaml.load(f.read(), Loader=yaml.FullLoader)
         basic_config = yaml.safe_load(f.read())
+    os.remove(path)
     return basic_config
 
 def convert_dict_to_yaml(dict_value):
