@@ -11,7 +11,6 @@ def read_full_yaml(path):
     :return: dict
     """
     with open(path, 'r', encoding='utf-8') as f:
-        # basic_config = yaml.load(f.read(), Loader=yaml.FullLoader)
         basic_config = yaml.safe_load(f.read())
     os.remove(path)
     return basic_config
@@ -23,16 +22,6 @@ def convert_dict_to_yaml(dict_value):
     :return: 
     """
     return yaml.dump(dict_value, allow_unicode=True)
-
-# def save_dict_to_yaml(dict_value, save_path):
-#     """
-#     将dict保存为yaml文件
-#     :param dict_value:
-#     :return: 
-#     """
-#     with open(save_path, 'w',  encoding='utf-8') as file:
-#         file.write(yaml.dump(dict_value, allow_unicode=True))
-
 
 def convert_mstimestamp(mstimestamp):
     """
