@@ -25,9 +25,9 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Install finetune requrements
 RUN bash fm_user.sh uninstall fm
-RUN bash fm_user.sh uninstall ma 
-RUN bash fm_user.sh install fm 
-RUN bash fm_user.sh install ma 
+RUN bash fm_user.sh uninstall ma
+RUN bash fm_user.sh install fm
+RUN bash fm_user.sh install ma
 
 COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
