@@ -117,7 +117,6 @@ class FoundationModelHandler:
                               job_name=task_name, model_config_path=model_config)
 
         # 失败为-1; 成功为job_id，比如c2170961-f3a8-xxxx-xxx-1845943479c3
-        # print("res: ", res)
         return res
 
     def delete_finetune(self, job_id):
@@ -160,7 +159,6 @@ class FoundationModelHandler:
             framework = self.get_parm_value(parms, "backend")
             phase = item["status"]["phase"]
             task_type = self.get_parm_value(parms, "task_type")
-            # runtime = convert_msruntime(item["status"]["duration"])
             runtime = item["status"]["duration"]
             engine_name = self.finetune_config["foundation_model"]["engine"]
 
