@@ -1,13 +1,10 @@
 import os
 
 from obs import ObsClient
-from .fmh import BASIC_CONFIG
-from .util import read_full_yaml
 
 
 class OBSHandler:
-    def __init__(self, bucket_name=None, endpoint="obs.cn-central-221.ovaijisuan.com"):
-        basic_config = BASIC_CONFIG
+    def __init__(self, basic_config, bucket_name=None, endpoint="obs.cn-central-221.ovaijisuan.com"):
         self.access_key = basic_config["AK"]
         self.secret_key = basic_config["SK"]
         self.bucket_name = basic_config["BUCKET_NAME"] if bucket_name is None else bucket_name

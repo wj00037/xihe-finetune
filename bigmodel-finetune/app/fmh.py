@@ -4,7 +4,7 @@ import json
 import requests
 import fm.fm_sdk as fm
 
-from app.obshandler import OBSHandler
+from .obshandler import OBSHandler
 from .util import read_full_yaml, convert_mstimestamp, gen_uuid, convert_dict_to_yaml
 
 # 获取当前文件所在的目录的路径
@@ -42,7 +42,7 @@ class FoundationModelHandler:
             foundation_model_default]["inference"]["app_config_name"])
 
         # 初始化OBSClient
-        self.obs_client = OBSHandler(finetune_config["finetune_bucket"])
+        self.obs_client = OBSHandler(basic_config, finetune_config["finetune_bucket"])
 
     def get_config(self):
         """获取微调基本配置文件
