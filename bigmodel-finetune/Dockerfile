@@ -32,9 +32,6 @@ RUN bash fm_user.sh install ma
 COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
 
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/finetune_basic.yml /bigmodel-finetune/conf/finetune_basic.yml
-ADD https://temp-data.obs.cn-central-221.ovaijisuan.com:443/xihe-finetune/asset.yml /bigmodel-finetune/conf/asset.yml
-
 RUN pip install -r requirements.txt
 
 RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
@@ -42,4 +39,4 @@ RUN adduser -u 5000 --disabled-password --gecos "" mindspore && chown -R mindspo
 
 USER mindspore
 
-CMD ["/bigmodel-finetune/entrypoint.sh"]
+CMD ["gunicorn", "-c", "gunicorn.config.py", "app.run:app"]
