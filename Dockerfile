@@ -1,4 +1,7 @@
-FROM golang:latest as BUILDER
+FROM openeuler/openeuler:23.03 as BUILDER
+RUN dnf update -y && \
+    dnf install -y golang && \
+    go env -w GOPROXY=https://goproxy.cn,direct
 
 MAINTAINER zengchen1024<chenzeng765@gmail.com>
 
@@ -7,17 +10,16 @@ COPY . /go/src/github.com/opensourceways/xihe-finetune
 RUN cd /go/src/github.com/opensourceways/xihe-finetune && GO111MODULE=on CGO_ENABLED=0 go build -o xihe-finetune
 
 # copy binary config and utils
-FROM alpine:3.14
-RUN apk update && apk add --no-cache \
-        git \
-        bash \
-        libc6-compat
+FROM openeuler/openeuler:22.03
+RUN dnf -y update && \
+    dnf in -y shadow git bash && \
+    groupadd -g 5000 mindspore && \
+    useradd -u 5000 -g mindspore -s /bin/bash -m mindspore
 
-RUN adduser mindspore -u 5000 -D
 USER mindspore
 WORKDIR /opt/app
 
-COPY --from=BUILDER /go/src/github.com/opensourceways/xihe-finetune/xihe-finetune /opt/app
+COPY --chown=mindspore --from=BUILDER /go/src/github.com/opensourceways/xihe-finetune/xihe-finetune /opt/app
 
 ENTRYPOINT ["/opt/app/xihe-finetune"]
 
