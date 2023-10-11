@@ -1,10 +1,7 @@
-FROM ubuntu:20.04
+FROM openeuler/openeuler:22.03
 
-# avoid stuck build due to user prompt
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update -y && \
-    apt-get install -y python3.9 python3-pip python3.9-dev libmysqlclient-dev pkg-config
+RUN dnf update -y && \
+    dnf install -y gcc python3.9 python3-pip python3-devel mysql-devel pkg-config
 
 EXPOSE 8080
 
@@ -33,9 +30,10 @@ COPY . /bigmodel-finetune
 WORKDIR /bigmodel-finetune
 
 RUN pip install -r requirements.txt
+RUN pip install requests
 
 RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
-RUN adduser -u 5000 --disabled-password --gecos "" mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.8
+RUN adduser -u 5000 mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.9 && chmod -R 755 /usr/local/lib64
 
 USER mindspore
 
