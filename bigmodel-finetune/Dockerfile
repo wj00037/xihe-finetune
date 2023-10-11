@@ -4,7 +4,7 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && \
-    apt-get install -y python3.9 python3-pip python3.9-dev
+    apt-get install -y python3.9 python3-pip python3.9-dev libmysqlclient-dev pkg-config
 
 EXPOSE 8080
 
