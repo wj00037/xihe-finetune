@@ -33,7 +33,7 @@ RUN pip install -r requirements.txt
 RUN pip install requests
 
 RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
-RUN adduser -u 5000 mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.9 && chmod -R 755 /usr/local/lib64
+RUN adduser -u 5000 mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.9 && chmod -R 755 /usr/local/lib64/python3.9
 
 USER mindspore
 
