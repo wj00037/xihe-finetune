@@ -33,6 +33,7 @@ RUN pip install -r requirements.txt
 
 RUN mkdir -p /bigmodel-finetune/test && cp requirements.txt /bigmodel-finetune/test
 RUN adduser -u 5000 mindspore && chown -R mindspore /bigmodel-finetune && chmod -R 755 /usr/local/lib/python3.9 && chmod -R 755 /usr/local/lib64/python3.9
+RUN dnf remove -y gcc && dnf autoremove -y && dnf clean all
 
 USER mindspore
 
